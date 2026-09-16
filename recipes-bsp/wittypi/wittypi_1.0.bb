@@ -11,7 +11,13 @@ inherit systemd
 SYSTEMD_SERVICE:${PN} = "wittypi-clock.service wittypi.service wittypi-configure.service wittypi-rtc-save.path"
 SYSTEMD_AUTO_ENABLE = "enable"
 
+# util-linux-flock: the lock is flock(1) inside wittypi-lib.sh's wp_lock now,
+# not a wrapper on ExecStart — the dependency stays, the wrappers are gone.
 RDEPENDS:${PN} = "i2c-tools libgpiod-tools util-linux-flock"
+
+# The lock contract (wittypi.inc): rtc-save is the one unit that must carry
+# no halt-status condition, because its .path would re-trigger it in a loop.
+WITTYPI_NO_CONDITION_UNITS = "wittypi-rtc-save.service"
 
 WITTYPI_BOARDS_DIRS ?= "${S}/boards ${UNPACKDIR}/boards"
 
