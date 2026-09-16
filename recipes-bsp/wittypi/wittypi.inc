@@ -31,7 +31,10 @@ python do_check_lock_contract() {
     standdown = set((d.getVar('WITTYPI_STANDDOWN_UNITS') or '').split())
     nocond = set((d.getVar('WITTYPI_NO_CONDITION_UNITS') or '').split())
     problems = []
-    for f in sorted(os.listdir(unitdir)):
+    # Three recipes share this file; wittypi-timing installs no units at all,
+    # so a missing unit dir is an empty set, not an error.
+    installed = sorted(os.listdir(unitdir)) if os.path.isdir(unitdir) else []
+    for f in installed:
         if not f.endswith('.service'):
             continue
         with open(os.path.join(unitdir, f)) as fh:
@@ -49,7 +52,7 @@ python do_check_lock_contract() {
             problems.append('%s: no ExecCondition=/usr/bin/wittypi halt-status — it would run into a shutdown' % f)
         if f in nocond and has_cond:
             problems.append('%s: has an ExecCondition — its .path would re-trigger it in a loop' % f)
-    for f in (standdown | nocond) - set(os.listdir(unitdir)):
+    for f in (standdown | nocond) - set(installed):
         problems.append('%s: named in the lock contract but not installed' % f)
     if problems:
         bb.fatal("%s: the lock contract is broken:\n  %s" % (pn, '\n  '.join(problems)))
