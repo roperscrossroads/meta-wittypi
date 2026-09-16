@@ -14,9 +14,11 @@ SYSTEMD_AUTO_ENABLE = "enable"
 
 RDEPENDS:${PN} = "wittypi"
 
-# The lock contract (wittypi.inc): the scheduler and its reschedule wrapper
-# stand down while a power-off is under way.
-WITTYPI_STANDDOWN_UNITS = "wittypi-schedule.service wittypi-reschedule.service"
+# The lock contract (wittypi.inc): the scheduler, its reschedule wrapper and
+# the watch stand down while a power-off is under way; the scheduler writes,
+# so it delivers TERM to the tool alone.
+WITTYPI_STANDDOWN_UNITS = "wittypi-schedule.service wittypi-reschedule.service wittypi-watch.service"
+WITTYPI_KILLMODE_MIXED_UNITS = "wittypi-schedule.service"
 
 do_install() {
     install -d ${D}${libexecdir}/site

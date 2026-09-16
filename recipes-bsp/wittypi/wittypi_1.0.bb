@@ -15,9 +15,13 @@ SYSTEMD_AUTO_ENABLE = "enable"
 # not a wrapper on ExecStart — the dependency stays, the wrappers are gone.
 RDEPENDS:${PN} = "i2c-tools libgpiod-tools util-linux-flock"
 
-# The lock contract (wittypi.inc): rtc-save is the one unit that must carry
-# no halt-status condition, because its .path would re-trigger it in a loop.
+# The lock contract (wittypi.inc): configure stands down while a power-off is
+# under way; rtc-save is the one unit that must carry no halt-status
+# condition, because its .path would re-trigger it in a loop; both write,
+# so both deliver TERM to the tool alone.
+WITTYPI_STANDDOWN_UNITS = "wittypi-configure.service"
 WITTYPI_NO_CONDITION_UNITS = "wittypi-rtc-save.service"
+WITTYPI_KILLMODE_MIXED_UNITS = "wittypi-rtc-save.service wittypi-configure.service"
 
 WITTYPI_BOARDS_DIRS ?= "${S}/boards ${UNPACKDIR}/boards"
 
